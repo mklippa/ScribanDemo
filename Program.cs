@@ -7,10 +7,37 @@ namespace ScribanDemo
 {
     class Program
     {
+        private static readonly TestResult TestResult = new TestResult
+        {
+            Sections = new[]
+            {
+                new Section
+                {
+                    Items = new []
+                    {
+                        new ItemResponse
+                        {
+                            Question = new Question
+                            {
+                                Metadatas = new []
+                                {
+                                    new QuestionMetadata
+                                    {
+                                        Name = "Foo",
+                                        Value = "Bar"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
         static void Main(string[] args)
         {
             var template = Template.Parse(File.ReadAllText("input.html"));
-            var result = template.Render(new { Name = "World" }); // => "Hello World!" 
+            var result = template.Render(new { TestResult = TestResult.ToString() });
             File.WriteAllText("output.html", result);
         }
     }
@@ -27,7 +54,7 @@ namespace ScribanDemo
 
     public class ItemResponse
     {
-                public Question Question { get; set; }
+        public Question Question { get; set; }
     }
 
     public class Question
