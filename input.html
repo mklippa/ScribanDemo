@@ -16,13 +16,12 @@
                             discriminationMatch = metadata.name | regex.match discriminationRegExPattern
                             guessingMatch = metadata.name | regex.match guessingRegExPattern
                             if (difficultyMatch | array.size > 0)
-                                tags[for.index] = difficultyMatch
+                                tags[for.index] = { id: difficultyMatch[1], name: "difficulty", value: metadata.value }
                             else if (discriminationMatch | array.size > 0)
-                                tags[for.index] = discriminationMatch
+                                tags[for.index] = { id: discriminationMatch[1], name: "discrimination", value: metadata.value }
                             else if (guessingMatch | array.size > 0)
-                                tags[for.index] = guessingMatch
+                                tags[for.index] = { id: guessingMatch[1], name: "guessing", value: metadata.value }
                             end
-                            
                         end
                         items[for.index] = tags
                     end
@@ -30,7 +29,7 @@
             end
         }}
         {{ for tags in items }}
-            <h1>{{ for.index }}</h1>
+            <h1>Item {{ for.index }}</h1>
             {{ for tag in tags }}
                 <h2>{{ tag }}</h2>
             {{ end }}
