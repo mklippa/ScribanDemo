@@ -37,7 +37,7 @@ namespace ScribanDemo
         static void Main(string[] args)
         {
             var template = Template.Parse(File.ReadAllText("input.html"));
-            var result = template.Render(new { TestResult });
+            var result = template.Render(new { TestResult = new[] { TestResult } });
             File.WriteAllText("output.html", result);
         }
     }
