@@ -4,12 +4,25 @@
     <body>
         {{
             items = []
+            difficultyRegExPattern = `^DifficultyScale(\d+)$`
+            discriminationRegExPattern = `^DifficultyScale(\d+)DI$`
+            guessingRegExPattern = `^DifficultyScale(\d+)Guess$`
             for assessment in test_result
                 for section in assessment.sections
                     for item in section.items
                         tags = []
                         for metadata in item.question.metadatas
-                            tags[for.index] = { name: metadata.name, value: metadata.value }
+                            difficultyMatch = metadata.name | regex.match difficultyRegExPattern
+                            discriminationMatch = metadata.name | regex.match discriminationRegExPattern
+                            guessingMatch = metadata.name | regex.match guessingRegExPattern
+                            if (difficultyMatch | array.size > 0)
+                                tags[for.index] = difficultyMatch
+                            else if (discriminationMatch | array.size > 0)
+                                tags[for.index] = discriminationMatch
+                            else if (guessingMatch | array.size > 0)
+                                tags[for.index] = guessingMatch
+                            end
+                            
                         end
                         items[for.index] = tags
                     end
@@ -19,8 +32,7 @@
         {{ for tags in items }}
             <h1>{{ for.index }}</h1>
             {{ for tag in tags }}
-                <h2>{{ tag.name }}</h2>
-                <p>{{ tag.value }}</p>
+                <h2>{{ tag }}</h2>
             {{ end }}
         {{ end }}
     </body>
