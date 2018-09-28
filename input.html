@@ -3,16 +3,25 @@
     </head>
     <body>
         {{
+            items = []
             for assessment in test_result
                 for section in assessment.sections
                     for item in section.items
+                        tags = []
                         for metadata in item.question.metadatas
-                            metadata.name
-                            metadata.value
+                            tags[for.index] = { name: metadata.name, value: metadata.value }
                         end
+                        items[for.index] = tags
                     end
                 end
             end
         }}
+        {{ for tags in items }}
+            <h1>{{ for.index }}</h1>
+            {{ for tag in tags }}
+                <h2>{{ tag.name }}</h2>
+                <p>{{ tag.value }}</p>
+            {{ end }}
+        {{ end }}
     </body>
 </html>

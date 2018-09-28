@@ -7,49 +7,80 @@ namespace ScribanDemo
 {
     class Program
     {
-        private static readonly TestResult TestResult = new TestResult
-        {
-            Sections = new[]
-            {
-                new Section
-                {
-                    Items = new []
-                    {
-                        new ItemResponse
-                        {
-                            Question = new Question
-                            {
-                                Metadatas = new []
-                                {
-                                    new QuestionMetadata
-                                    {
-                                        Name = "Foo",
-                                        Value = "Bar"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
         static void Main(string[] args)
         {
             var template = Template.Parse(File.ReadAllText("input.html"));
-            var result = template.Render(new { TestResult = new[] { TestResult } });
+            var result = template.Render(new { TestResult = ParseCsv("ItemPool.csv") });
             File.WriteAllText("output.html", result);
+        }
+
+        private static TestResult[] ParseCsv(string filePath)
+        {
+            // read from file
+            var lines = File.ReadAllLines(filePath);
+            var keys = lines[0].Split(',');
+            var items = new List<Dictionary<string,string>>();
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var item = new Dictionary<string,string>();
+                var values = lines[i].Split(',');
+                for (int j = 0; j < values.Length; j++)
+                {
+                    item.Add(keys[j],values[j]);
+                }
+                items.Add(item);
+            }
+
+            // prepare data
+            var result = new List<TestResult>();
+            result.Add(new TestResult());
+            result[0].Sections = new List<Section>();
+            result[0].Sections.Add(new Section());
+            result[0].Sections[0].Items = new List<ItemResponse>();
+
+            foreach (var item in items)
+            {
+                var question = new Question();
+                question.Metadatas = new List<QuestionMetadata>();
+                
+                question.Metadatas.Add(Tag(item, "Curriculum"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale1"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale1DI"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale1Guess"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale2"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale2DI"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale2Guess"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale3"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale3DI"));
+                question.Metadatas.Add(Tag(item, "DifficultyScale3Guess"));
+
+                result[0].Sections[0].Items.Add(new ItemResponse
+                {
+                    Question = question
+                });
+            }
+
+            return result.ToArray();
+        }
+
+        private static QuestionMetadata Tag(Dictionary<string, string> item, string key)
+        {
+            return new QuestionMetadata
+            {
+                Name = key,
+                Value = item[key]
+            };
         }
     }
 
     class TestResult
     {
-        public IEnumerable<Section> Sections { get; set; }
+        public List<Section> Sections { get; set; }
     }
 
     class Section
     {
-        public IEnumerable<ItemResponse> Items { get; set; }
+        public List<ItemResponse> Items { get; set; }
     }
 
     public class ItemResponse
@@ -59,7 +90,7 @@ namespace ScribanDemo
 
     public class Question
     {
-        public IEnumerable<QuestionMetadata> Metadatas { get; set; }
+        public List<QuestionMetadata> Metadatas { get; set; }
     }
 
     public class QuestionMetadata
