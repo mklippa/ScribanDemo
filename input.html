@@ -1,10 +1,18 @@
 <html>
     <head>
-        {{
-            i = 0
-        }}
     </head>
     <body>
-        {{ test_result }}
+        {{
+            for assessment in test_result
+                for section in assessment.sections
+                    for item in section.items
+                        for metadata in item.question.metadatas
+                            metadata.name
+                            metadata.value
+                        end
+                    end
+                end
+            end
+        }}
     </body>
 </html>
