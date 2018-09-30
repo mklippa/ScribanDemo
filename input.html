@@ -16,11 +16,11 @@
                             discriminationMatch = metadata.name | regex.match discriminationRegExPattern
                             guessingMatch = metadata.name | regex.match guessingRegExPattern
                             if (difficultyMatch | array.size > 0)
-                                tags = tags | array.add { id: difficultyMatch[1], name: "difficulty", value: metadata.value }
+                                tags = tags | array.add { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
                             else if (discriminationMatch | array.size > 0)
-                                tags = tags | array.add { id: discriminationMatch[1], name: "discrimination", value: metadata.value }
+                                tags = tags | array.add { id: discriminationMatch[1], name: "Discrimination", value: metadata.value }
                             else if (guessingMatch | array.size > 0)
-                                tags = tags | array.add { id: guessingMatch[1], name: "guessing", value: metadata.value }
+                                tags = tags | array.add { id: guessingMatch[1], name: "Guessing", value: metadata.value }
                             end
                         end
                         items = items | array.add tags
@@ -29,12 +29,12 @@
             end
             result = []
             for tags in items
-                result[for.index] = { itemId: for.index }
+                result[for.index] = { ID: for.index }
                 scaleData = []
                 for tag in tags
                     existed = -1
                     for data in scaleData
-                        if data.id == tag.id
+                        if data.ID == tag.id
                             existed = for.index
                             break
                         end
@@ -42,19 +42,16 @@
                     if existed != -1
                         scaleData[existed][tag.name] = tag.value
                     else
-                        data = { id: tag.id }
+                        data = { ID: tag.id }
                         data[tag.name] = tag.value
                         scaleData = scaleData | array.add data
                     end
                 end
-                result[for.index].scaleData = scaleData
+                result[for.index].ScaleData = scaleData
             end
         }}
         {{ for item in result }}
-            <h1>Item {{ item.itemId }}</h1>
-            {{ for data in item.scaleData }}
-                <h2>{{ data }}</h2>
-            {{ end }}
+            <p>{{ item }}</p>
         {{ end }}
     </body>
 </html>
