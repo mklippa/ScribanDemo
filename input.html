@@ -3,39 +3,47 @@
     </head>
     <body>
         {{
-            items = []
+            # Tag names
+            curriculum = "Curriculum"
             difficultyRegExPattern = `^DifficultyScale(\d+)$`
             discriminationRegExPattern = `^DifficultyScale(\d+)DI$`
             guessingRegExPattern = `^DifficultyScale(\d+)Guess$`
-            curriculum = "Curriculum"
+
+            # Collect data from tags
+            items = []
             for assessment in test_result
                 for section in assessment.sections
                     for item in section.items
-                        tags = []
+                        scaleDataTags = []
                         curriculumTags = []
                         for metadata in item.question.metadatas
                             difficultyMatch = metadata.name | regex.match difficultyRegExPattern
                             discriminationMatch = metadata.name | regex.match discriminationRegExPattern
                             guessingMatch = metadata.name | regex.match guessingRegExPattern
                             if (difficultyMatch | array.size > 0)
-                                tags = tags | array.add { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
+                                difficulty = { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
+                                scaleDataTags = scaleDataTags | array.add difficulty
                             else if (discriminationMatch | array.size > 0)
-                                tags = tags | array.add { id: discriminationMatch[1], name: "Discrimination", value: metadata.value }
+                                discrimination = { id: discriminationMatch[1], name: "Discrimination", value: metadata.value }
+                                scaleDataTags = scaleDataTags | array.add discrimination
                             else if (guessingMatch | array.size > 0)
-                                tags = tags | array.add { id: guessingMatch[1], name: "Guessing", value: metadata.value }
+                                guessing = { id: guessingMatch[1], name: "Guessing", value: metadata.value }
+                                scaleDataTags = scaleDataTags | array.add guessing
                             else if (metadata.name == curriculum)
                                 curriculumTags = curriculumTags | array.add metadata.value
                             end
                         end
-                        items = items | array.add { curriculumTags: curriculumTags, scaleData: tags }
+                        items = items | array.add { curriculumTags: curriculumTags, scaleDataTags: scaleDataTags }
                     end
                 end
             end
+
+            # Aggregate scale data
             result = []
-            for tags in items
-                result[for.index] = { ID: for.index, CurriculumTags: tags.curriculumTags }
+            for item in items
+                result = result | array.add { ID: for.index, CurriculumTags: item.curriculumTags }
                 scaleData = []
-                for tag in tags.scaleData
+                for tag in item.scaleDataTags
                     existed = -1
                     for data in scaleData
                         if data.ID == tag.id
