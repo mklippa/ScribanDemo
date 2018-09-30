@@ -39,9 +39,11 @@
             end
 
             # Aggregate scale data
-            result = []
+            itemList = []
+            allCurriculumTags = []
             for item in items
-                result = result | array.add { ID: for.index, CurriculumTags: item.curriculumTags }
+                itemList = itemList | array.add { ID: for.index, CurriculumTags: item.curriculumTags }
+                allCurriculumTags = allCurriculumTags | array.add_range item.curriculumTags
                 scaleData = []
                 for tag in item.scaleDataTags
                     existed = -1
@@ -59,11 +61,17 @@
                         scaleData = scaleData | array.add data
                     end
                 end
-                result[for.index].ScaleData = scaleData
+                itemList[for.index].ScaleData = scaleData
             end
+            allCurriculumTags = allCurriculumTags | array.uniq
+
+            result = {
+                ItemList: itemList, 
+                SessionHistory: [], 
+                ReportRequest: { CurriculumTags: allCurriculumTags }
+            }
+
+            result
         }}
-        {{ for item in result }}
-            <p>{{ item }}</p>
-        {{ end }}
     </body>
 </html>
