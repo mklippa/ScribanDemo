@@ -43,7 +43,7 @@ namespace ScribanDemo
                 var question = new Question();
                 question.Metadatas = new List<QuestionMetadata>();
                 
-                question.Metadatas.Add(Tag(item, "Curriculum"));
+                question.Metadatas.Add(Tag(item, "Curriculum Sub-Category"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale1"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale1DI"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale1Guess"));

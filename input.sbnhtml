@@ -4,7 +4,7 @@
     <body>
         {{
             # Tag names
-            curriculum = "Curriculum"
+            curriculum = "Curriculum Sub-Category"
             difficultyRegExPattern = `^DifficultyScale(\d+)$`
             discriminationRegExPattern = `^DifficultyScale(\d+)DI$`
             guessingRegExPattern = `^DifficultyScale(\d+)Guess$`

@@ -1,4 +1,4 @@
-Item ID,Version,Item Name,Question Type,Master ID,Language,Max Mark,Friend Items,Enemy Items,Curriculum,DifficultyScale1,DifficultyScale1DI,DifficultyScale1Guess,DifficultyScale2,DifficultyScale2DI,DifficultyScale2Guess,DifficultyScale3,DifficultyScale3DI,DifficultyScale3Guess
+Item ID,Version,Item Name,Question Type,Master ID,Language,Max Mark,Friend Items,Enemy Items,Curriculum Sub-Category,DifficultyScale1,DifficultyScale1DI,DifficultyScale1Guess,DifficultyScale2,DifficultyScale2DI,DifficultyScale2Guess,DifficultyScale3,DifficultyScale3DI,DifficultyScale3Guess
 14331P0001,3,TestItemName 1.1,Numerical Entry,,,1,,,Data,1.1,1.2,1.3,2.1,2.2,2.3,3.1,3.2,3.3
 14331P0002,4,TestItemName 1.2,Numerical Entry,,,1,,,Data,1.1,1.2,1.3,2.1,2.2,2.3,3.1,3.2,3.3
 14331P0003,3,TestItemName 2.1,Numerical Entry,Master-1,en,1,,,Data,1.1,1.2,1.3,2.1,2.2,2.3,3.1,3.2,3.3
