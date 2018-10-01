@@ -11,9 +11,11 @@
 
             # Collect data from tags
             items = []
+            sessionHistory = []
             for assessment in test_result
                 for section in assessment.sections
                     for item in section.items
+                        sessionHistory = sessionHistory | array.add { ID: item.question.item_id, AwardedMarks: item.mark }
                         scaleDataTags = []
                         curriculumTags = []
                         for metadata in item.question.metadatas
@@ -70,8 +72,8 @@
             allCurriculumTags = allCurriculumTags | array.uniq
 
             result = {
-                ItemList: itemList, 
-                SessionHistory: [], 
+                ItemList: itemList,
+                SessionHistory: sessionHistory,
                 ReportRequest: { CurriculumTags: allCurriculumTags }
             }
 
