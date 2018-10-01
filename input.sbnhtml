@@ -33,7 +33,11 @@
                                 curriculumTags = curriculumTags | array.add metadata.value
                             end
                         end
-                        items = items | array.add { curriculumTags: curriculumTags, scaleDataTags: scaleDataTags }
+                        items = items | array.add { 
+                            id: item.question.item_id,
+                            curriculumTags: curriculumTags,
+                            scaleDataTags: scaleDataTags
+                        }
                     end
                 end
             end
@@ -42,7 +46,7 @@
             itemList = []
             allCurriculumTags = []
             for item in items
-                itemList = itemList | array.add { ID: for.index, CurriculumTags: item.curriculumTags }
+                itemList = itemList | array.add { ID: item.id, CurriculumTags: item.curriculumTags }
                 allCurriculumTags = allCurriculumTags | array.add_range item.curriculumTags
                 scaleData = []
                 for tag in item.scaleDataTags

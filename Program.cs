@@ -54,8 +54,11 @@ namespace ScribanDemo
                 question.Metadatas.Add(Tag(item, "DifficultyScale3DI"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale3Guess"));
 
+                question.ItemId = item["Item ID"];
+
                 result[0].Sections[0].Items.Add(new ItemResponse
                 {
+                    Mark = double.Parse(item["Max Mark"]),
                     Question = question
                 });
             }
@@ -85,11 +88,13 @@ namespace ScribanDemo
 
     public class ItemResponse
     {
+        public double Mark { get; set; }
         public Question Question { get; set; }
     }
 
     public class Question
     {
+        public string ItemId { get; set; }
         public List<QuestionMetadata> Metadatas { get; set; }
     }
 
