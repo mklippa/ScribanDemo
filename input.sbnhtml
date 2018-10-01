@@ -4,53 +4,71 @@
     <body>
         {{
             func get_report_input
-                itemList = []
-                sessionHistory = []
-                curriculumTagName = "Curriculum Sub-Category"
-                difficultyTagNamePattern = `^DifficultyScale(\S+)$`
-                discriminationTagNamePattern = `^DifficultyScale(\S+)DI$`
-                guessingTagNamePattern = `^DifficultyScale(\S+)Guess$`
+                item_list = []
+                session_history = []
                 for assessment in test_result
                     for section in assessment.sections
                         for item in section.items
-                            sessionHistory = sessionHistory | array.add { ID: item.question.item_id, AwardedMarks: item.mark }
-                            scaleData = []
-                            curriculumTags = []
-                            for metadata in item.question.metadatas
-                                difficultyMatches = metadata.name | regex.match difficultyTagNamePattern
-                                discriminationMatches = metadata.name | regex.match discriminationTagNamePattern
-                                guessingMatches = metadata.name | regex.match guessingTagNamePattern
-                                if (discriminationMatches | array.size > 0)
-                                    continue
-                                else if (guessingMatches | array.size > 0)
-                                    continue
-                                else if (difficultyMatches | array.size > 0)
-                                    scaleData = scaleData | array.add {
-                                        ID: difficultyMatches[1],
-                                        Difficulty: [metadata.value]
-                                    }
-                                else if (metadata.name == curriculumTagName)
-                                    curriculumTags = curriculumTags | array.add metadata.value
-                                end
-                            end
-                            itemList = itemList | array.add {
-                                ID: item.question.item_id,
-                                CurriculumTags: curriculumTags,
-                                ScaleData: scaleData
+                            item_id = item.question.item_id
+                            # fill session history
+                            session_history = session_history | array.add { 
+                                ID: item_id, 
+                                AwardedMarks: item.mark 
                             }
+                            # fill item list
+                            item_list = item_list | array.add (item.question.metadatas | get_item item_id) 
                         end
                     end
                 end
-                curriculumTags = []
-                for item in itemList
-                    curriculumTags = curriculumTags | array.add_range item.CurriculumTags
-                end
-                curriculumTags = curriculumTags | array.uniq
+                # fill curriculum tags
+                curriculum_tags = item_list | get_unique_curriculum_tags
+                # fill report input
                 ret {
-                    ItemList: itemList,
-                    SessionHistory: sessionHistory,
-                    ReportRequest: { CurriculumTags: curriculumTags }
+                    ItemList: item_list,
+                    SessionHistory: session_history,
+                    ReportRequest: { CurriculumTags: curriculum_tags }
                 }
+            end
+
+            func get_unique_curriculum_tags
+                item_list = $0
+                curriculum_tags = []
+                for item in item_list
+                    curriculum_tags = curriculum_tags | array.add_range item.CurriculumTags
+                end
+                curriculum_tags = curriculum_tags | array.uniq 
+                ret curriculum_tags
+            end
+
+            func get_item
+                metadatas = $0
+                curriculum_tag_name = "Curriculum Sub-Category"
+                difficulty_tag_name_pattern = `^DifficultyScale(\S+)$`
+                discrimination_tag_name_pattern = `^DifficultyScale(\S+)DI$`
+                guessing_tag_name_pattern = `^DifficultyScale(\S+)Guess$`
+                item = { ID: $1, CurriculumTags: [], ScaleData: [] }
+                for metadata in metadatas
+                    difficulty_matches = metadata.name | regex.match difficulty_tag_name_pattern
+                    discrimination_matches = metadata.name | regex.match discrimination_tag_name_pattern
+                    guessing_matches = metadata.name | regex.match guessing_tag_name_pattern
+                    # skip discrimination tag
+                    if (discrimination_matches | array.size > 0)
+                        continue
+                    # skip guessing tag
+                    else if (guessing_matches | array.size > 0)
+                        continue
+                    # process difficulty tag
+                    else if (difficulty_matches | array.size > 0)
+                        item.ScaleData = item.ScaleData | array.add {
+                            ID: difficulty_matches[1],
+                            Difficulty: [metadata.value]
+                        }
+                    # process curriculum tag
+                    else if (metadata.name == curriculum_tag_name)
+                        item.CurriculumTags = item.CurriculumTags | array.add metadata.value
+                    end
+                end
+                ret item
             end
 
             get_report_input
