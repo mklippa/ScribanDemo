@@ -3,81 +3,57 @@
     </head>
     <body>
         {{
-            # Tag names
-            curriculum = "Curriculum Sub-Category"
-            difficultyRegExPattern = `^DifficultyScale(\S+)$`
-            discriminationRegExPattern = `^DifficultyScale(\S+)DI$`
-            guessingRegExPattern = `^DifficultyScale(\S+)Guess$`
-
-            # Collect data from tags
-            items = []
-            sessionHistory = []
-            for assessment in test_result
-                for section in assessment.sections
-                    for item in section.items
-                        sessionHistory = sessionHistory | array.add { ID: item.question.item_id, AwardedMarks: item.mark }
-                        scaleDataTags = []
-                        curriculumTags = []
-                        for metadata in item.question.metadatas
-                            difficultyMatch = metadata.name | regex.match difficultyRegExPattern
-                            discriminationMatch = metadata.name | regex.match discriminationRegExPattern
-                            guessingMatch = metadata.name | regex.match guessingRegExPattern
-                            if (discriminationMatch | array.size > 0)
-                                discrimination = { id: discriminationMatch[1], name: "Discrimination", value: metadata.value }
-                                scaleDataTags = scaleDataTags | array.add discrimination
-                            else if (guessingMatch | array.size > 0)
-                                guessing = { id: guessingMatch[1], name: "Guessing", value: metadata.value }
-                                scaleDataTags = scaleDataTags | array.add guessing
-                            else if (difficultyMatch | array.size > 0)
-                                difficulty = { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
-                                scaleDataTags = scaleDataTags | array.add difficulty
-                            else if (metadata.name == curriculum)
-                                curriculumTags = curriculumTags | array.add metadata.value
+            func get_report_input
+                itemList = []
+                sessionHistory = []
+                curriculumTagName = "Curriculum Sub-Category"
+                difficultyTagNamePattern = `^DifficultyScale(\S+)$`
+                discriminationTagNamePattern = `^DifficultyScale(\S+)DI$`
+                guessingTagNamePattern = `^DifficultyScale(\S+)Guess$`
+                for assessment in test_result
+                    for section in assessment.sections
+                        for item in section.items
+                            sessionHistory = sessionHistory | array.add { ID: item.question.item_id, AwardedMarks: item.mark }
+                            scaleData = []
+                            curriculumTags = []
+                            for metadata in item.question.metadatas
+                                difficultyMatches = metadata.name | regex.match difficultyTagNamePattern
+                                discriminationMatches = metadata.name | regex.match discriminationTagNamePattern
+                                guessingMatches = metadata.name | regex.match guessingTagNamePattern
+                                if (discriminationMatches | array.size > 0)
+                                    continue
+                                else if (guessingMatches | array.size > 0)
+                                    continue
+                                else if (difficultyMatches | array.size > 0)
+                                    scaleData = scaleData | array.add {
+                                        ID: difficultyMatches[1],
+                                        Difficulty: [metadata.value]
+                                    }
+                                else if (metadata.name == curriculumTagName)
+                                    curriculumTags = curriculumTags | array.add metadata.value
+                                end
                             end
-                        end
-                        items = items | array.add { 
-                            id: item.question.item_id,
-                            curriculumTags: curriculumTags,
-                            scaleDataTags: scaleDataTags
-                        }
-                    end
-                end
-            end
-
-            # Aggregate scale data
-            itemList = []
-            allCurriculumTags = []
-            for item in items
-                itemList = itemList | array.add { ID: item.id, CurriculumTags: item.curriculumTags }
-                allCurriculumTags = allCurriculumTags | array.add_range item.curriculumTags
-                scaleData = []
-                for tag in item.scaleDataTags
-                    existed = -1
-                    for data in scaleData
-                        if data.ID == tag.id
-                            existed = for.index
-                            break
+                            itemList = itemList | array.add {
+                                ID: item.question.item_id,
+                                CurriculumTags: curriculumTags,
+                                ScaleData: scaleData
+                            }
                         end
                     end
-                    if existed != -1
-                        scaleData[existed][tag.name] = tag.value
-                    else
-                        data = { ID: tag.id }
-                        data[tag.name] = tag.value
-                        scaleData = scaleData | array.add data
-                    end
                 end
-                itemList[for.index].ScaleData = scaleData
+                curriculumTags = []
+                for item in itemList
+                    curriculumTags = curriculumTags | array.add_range item.CurriculumTags
+                end
+                curriculumTags = curriculumTags | array.uniq
+                ret {
+                    ItemList: itemList,
+                    SessionHistory: sessionHistory,
+                    ReportRequest: { CurriculumTags: curriculumTags }
+                }
             end
-            allCurriculumTags = allCurriculumTags | array.uniq
 
-            result = {
-                ItemList: itemList,
-                SessionHistory: sessionHistory,
-                ReportRequest: { CurriculumTags: allCurriculumTags }
-            }
-
-            result
+            get_report_input
         }}
     </body>
 </html>
