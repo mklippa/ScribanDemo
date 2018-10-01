@@ -9,7 +9,7 @@ namespace ScribanDemo
     {
         static void Main(string[] args)
         {
-            var template = Template.Parse(File.ReadAllText("input.html"));
+            var template = Template.Parse(File.ReadAllText("input.sbnhtml"));
             var result = template.Render(new { TestResult = ParseCsv("ItemPool.csv") });
             File.WriteAllText("output.html", result);
         }
