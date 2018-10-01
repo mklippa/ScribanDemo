@@ -5,9 +5,9 @@
         {{
             # Tag names
             curriculum = "Curriculum Sub-Category"
-            difficultyRegExPattern = `^DifficultyScale(\d+)$`
-            discriminationRegExPattern = `^DifficultyScale(\d+)DI$`
-            guessingRegExPattern = `^DifficultyScale(\d+)Guess$`
+            difficultyRegExPattern = `^DifficultyScale(\S+)$`
+            discriminationRegExPattern = `^DifficultyScale(\S+)DI$`
+            guessingRegExPattern = `^DifficultyScale(\S+)Guess$`
 
             # Collect data from tags
             items = []
@@ -22,15 +22,15 @@
                             difficultyMatch = metadata.name | regex.match difficultyRegExPattern
                             discriminationMatch = metadata.name | regex.match discriminationRegExPattern
                             guessingMatch = metadata.name | regex.match guessingRegExPattern
-                            if (difficultyMatch | array.size > 0)
-                                difficulty = { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
-                                scaleDataTags = scaleDataTags | array.add difficulty
-                            else if (discriminationMatch | array.size > 0)
+                            if (discriminationMatch | array.size > 0)
                                 discrimination = { id: discriminationMatch[1], name: "Discrimination", value: metadata.value }
                                 scaleDataTags = scaleDataTags | array.add discrimination
                             else if (guessingMatch | array.size > 0)
                                 guessing = { id: guessingMatch[1], name: "Guessing", value: metadata.value }
                                 scaleDataTags = scaleDataTags | array.add guessing
+                            else if (difficultyMatch | array.size > 0)
+                                difficulty = { id: difficultyMatch[1], name: "Difficulty", value: [metadata.value] }
+                                scaleDataTags = scaleDataTags | array.add difficulty
                             else if (metadata.name == curriculum)
                                 curriculumTags = curriculumTags | array.add metadata.value
                             end
