@@ -12,12 +12,12 @@
                             for item in section.items
                                 item_id = item.question.item_id
                                 # fill session history
-                                session_history = session_history | array.add { 
-                                    ID: item_id, 
-                                    AwardedMarks: item.mark 
+                                session_history = session_history | array.add {
+                                    "'ID'": "'" + item_id + "'",
+                                    "'AwardedMarks'": item.mark
                                 }
                                 # fill item list
-                                item_list = item_list | array.add (item.question.metadatas | _get_item item_id) 
+                                item_list = item_list | array.add (item.question.metadatas | _get_item item_id)
                             end
                         end
                     end
@@ -25,9 +25,9 @@
                     curriculum_tags = item_list | _get_unique_curriculum_tags
                     # fill report input
                     ret {
-                        ItemList: item_list,
-                        SessionHistory: session_history,
-                        ReportRequest: { CurriculumTags: curriculum_tags }
+                        "'ItemList'": item_list,
+                        "'SessionHistory'": session_history,
+                        "'ReportRequest'": { CurriculumTags: curriculum_tags }
                     }
                 end
                 func _get_unique_curriculum_tags
@@ -36,7 +36,7 @@
                     for item in item_list
                         curriculum_tags = curriculum_tags | array.add_range item.CurriculumTags
                     end
-                    curriculum_tags = curriculum_tags | array.uniq 
+                    curriculum_tags = curriculum_tags | array.uniq
                     ret curriculum_tags
                 end
                 func _get_item
@@ -45,7 +45,7 @@
                     difficulty_tag_name_pattern = `^DifficultyScale(\S+)$`
                     discrimination_tag_name_pattern = `^DifficultyScale(\S+)DI$`
                     guessing_tag_name_pattern = `^DifficultyScale(\S+)Guess$`
-                    item = { ID: $1, CurriculumTags: [], ScaleData: [] }
+                    item = { "'ID'": "'" + $1 + "'", "'CurriculumTags'": [], "'ScaleData'": [] }
                     for metadata in metadatas
                         difficulty_matches = metadata.name | regex.match difficulty_tag_name_pattern
                         discrimination_matches = metadata.name | regex.match discrimination_tag_name_pattern
@@ -58,20 +58,20 @@
                             continue
                         # process difficulty tag
                         else if (difficulty_matches | array.size > 0)
-                            item.ScaleData = item.ScaleData | array.add {
-                                ID: difficulty_matches[1],
-                                Difficulty: [metadata.value]
+                            item["'ScaleData'"] = ["'ScaleData'"] | array.add {
+                                "'ID'": "'" + difficulty_matches[1] + "'",
+                                "'Difficulty'": [metadata.value]
                             }
                         # process curriculum tag
                         else if (metadata.name == curriculum_tag_name)
-                            item.CurriculumTags = item.CurriculumTags | array.add metadata.value
+                            item["'CurriculumTags'"] = item["'CurriculumTags'"] | array.add ("'" + metadata.value + "'")
                         end
                     end
                     ret item
                 end
                 ret { create: @_get_report_input }
             end
-            
+
             helper = report_input_helper
             helper.create
         }}
