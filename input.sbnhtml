@@ -34,7 +34,7 @@
                     item_list = $0
                     curriculum_tags = []
                     for item in item_list
-                        curriculum_tags = curriculum_tags | array.add_range item.CurriculumTags
+                        curriculum_tags = curriculum_tags | array.add_range item["'CurriculumTags'"]
                     end
                     curriculum_tags = curriculum_tags | array.uniq
                     ret curriculum_tags
