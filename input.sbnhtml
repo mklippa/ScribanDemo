@@ -72,8 +72,7 @@
                 ret { build: @build }
             end
 
-            builder = reportRequestJsonBuilder
-            builder.build
+            reportRequestJsonBuilder.build
         }}
     </body>
 </html>
