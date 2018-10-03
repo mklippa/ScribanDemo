@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Scriban;
+using Scriban.Runtime;
 
 namespace ScribanDemo
 {
@@ -10,8 +12,13 @@ namespace ScribanDemo
         static void Main(string[] args)
         {
             var template = Template.Parse(File.ReadAllText("input.sbnhtml"));
-            var result = template.Render(new { TestResult = ParseCsv("ItemPool.csv") });
+            var result = template.Render(new TemplateObject());
             File.WriteAllText("output.html", result);
+        }
+
+        public class TemplateObject
+        {
+            public TestResult[] TestResult { get; set; } = ParseCsv("ItemPool.csv");
         }
 
         private static TestResult[] ParseCsv(string filePath)
@@ -42,7 +49,7 @@ namespace ScribanDemo
             {
                 var question = new Question();
                 question.Metadatas = new List<QuestionMetadata>();
-                
+
                 question.Metadatas.Add(Tag(item, "Curriculum Sub-Category"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale1"));
                 question.Metadatas.Add(Tag(item, "DifficultyScale1DI"));

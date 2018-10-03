@@ -3,77 +3,77 @@
     </head>
     <body>
         {{
-            func report_input_helper
-                func _get_report_input
-                    item_list = []
-                    session_history = []
-                    for assessment in test_result
-                        for section in assessment.sections
-                            for item in section.items
-                                item_id = item.question.item_id
+            func reportRequestJsonBuilder
+                func build
+                    itemList = []
+                    sessionHistory = []
+                    for assessment in test_result # -> TestResult
+                        for section in assessment.sections # -> assessment.Sections
+                            for item in section.items # -> section.Items
+                                itemId = item.question.item_id # -> item.Question.ItemId
                                 # fill session history
-                                session_history = session_history | array.add {
-                                    "'ID'": "'" + item_id + "'",
-                                    "'AwardedMarks'": item.mark
+                                sessionHistory = sessionHistory | array.add {
+                                    '"ID"': '"' + itemId + '"',
+                                    '"AwardedMarks"': item.mark # -> item.Mark
                                 }
                                 # fill item list
-                                item_list = item_list | array.add (item.question.metadatas | _get_item item_id)
+                                itemList = itemList | array.add (item.question.metadatas | getItem itemId) # -> item.Question.Metadatas
                             end
                         end
                     end
                     # fill curriculum tags
-                    curriculum_tags = item_list | _get_unique_curriculum_tags
+                    curriculumTags = itemList | getUniqueCurriculumTags
                     # fill report input
                     ret {
-                        "'ItemList'": item_list,
-                        "'SessionHistory'": session_history,
-                        "'ReportRequest'": { CurriculumTags: curriculum_tags }
+                        '"ItemList"': itemList,
+                        '"SessionHistory"': sessionHistory,
+                        '"ReportRequest"': { '"CurriculumTags"': curriculumTags }
                     }
                 end
-                func _get_unique_curriculum_tags
-                    item_list = $0
-                    curriculum_tags = []
-                    for item in item_list
-                        curriculum_tags = curriculum_tags | array.add_range item["'CurriculumTags'"]
+                func getUniqueCurriculumTags
+                    itemList = $0
+                    curriculumTags = []
+                    for item in itemList
+                        curriculumTags = curriculumTags | array.add_range item['"CurriculumTags"']
                     end
-                    curriculum_tags = curriculum_tags | array.uniq
-                    ret curriculum_tags
+                    curriculumTags = curriculumTags | array.uniq
+                    ret curriculumTags
                 end
-                func _get_item
+                func getItem
                     metadatas = $0
-                    curriculum_tag_name = "Curriculum Sub-Category"
-                    difficulty_tag_name_pattern = `^DifficultyScale(\S+)$`
-                    discrimination_tag_name_pattern = `^DifficultyScale(\S+)DI$`
-                    guessing_tag_name_pattern = `^DifficultyScale(\S+)Guess$`
-                    item = { "'ID'": "'" + $1 + "'", "'CurriculumTags'": [], "'ScaleData'": [] }
+                    curriculumTagName = 'Curriculum Sub-Category'
+                    difficultyTagNamePattern = `^DifficultyScale(\S+)$`
+                    discriminationTagNamePattern = `^DifficultyScale(\S+)DI$`
+                    guessingTagNamePattern = `^DifficultyScale(\S+)Guess$`
+                    item = { '"ID"': '"' + $1 + '"', '"CurriculumTags"': [], '"ScaleData"': [] }
                     for metadata in metadatas
-                        difficulty_matches = metadata.name | regex.match difficulty_tag_name_pattern
-                        discrimination_matches = metadata.name | regex.match discrimination_tag_name_pattern
-                        guessing_matches = metadata.name | regex.match guessing_tag_name_pattern
+                        difficultyMatches = metadata.name | regex.match difficultyTagNamePattern # -> metadata.Name
+                        discriminationMatches = metadata.name | regex.match discriminationTagNamePattern # -> metadata.Name
+                        guessingMatches = metadata.name | regex.match guessingTagNamePattern # -> metadata.Name
                         # skip discrimination tag
-                        if (discrimination_matches | array.size > 0)
+                        if (discriminationMatches | array.size > 0)
                             continue
                         # skip guessing tag
-                        else if (guessing_matches | array.size > 0)
+                        else if (guessingMatches | array.size > 0)
                             continue
                         # process difficulty tag
-                        else if (difficulty_matches | array.size > 0)
-                            item["'ScaleData'"] = ["'ScaleData'"] | array.add {
-                                "'ID'": "'" + difficulty_matches[1] + "'",
-                                "'Difficulty'": [metadata.value]
+                        else if (difficultyMatches | array.size > 0)
+                            item['"ScaleData"'] = item['"ScaleData"'] | array.add {
+                                '"ID"': '"' + difficultyMatches[1] + '"',
+                                '"Difficulty"': [metadata.value] # -> metadata.Value
                             }
                         # process curriculum tag
-                        else if (metadata.name == curriculum_tag_name)
-                            item["'CurriculumTags'"] = item["'CurriculumTags'"] | array.add ("'" + metadata.value + "'")
+                        else if (metadata.name == curriculumTagName) # -> metadata.Name
+                            item['"CurriculumTags"'] = item['"CurriculumTags"'] | array.add ('"' + metadata.value + '"') # -> metadata.Value
                         end
                     end
                     ret item
                 end
-                ret { create: @_get_report_input }
+                ret { build: @build }
             end
 
-            helper = report_input_helper
-            helper.create
+            builder = reportRequestJsonBuilder
+            builder.build
         }}
     </body>
 </html>
