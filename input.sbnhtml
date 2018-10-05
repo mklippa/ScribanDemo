@@ -50,24 +50,45 @@
                         difficultyMatches = metadata.name | regex.match difficultyTagNamePattern # -> metadata.Name
                         discriminationMatches = metadata.name | regex.match discriminationTagNamePattern # -> metadata.Name
                         guessingMatches = metadata.name | regex.match guessingTagNamePattern # -> metadata.Name
-                        # skip discrimination tag
+						# process discrimination tag
                         if (discriminationMatches | array.size > 0)
-                            continue
-                        # skip guessing tag
-                        else if (guessingMatches | array.size > 0)
-                            continue
-                        # process difficulty tag
-                        else if (difficultyMatches | array.size > 0)
-                            item['"ScaleData"'] = item['"ScaleData"'] | array.add {
-                                '"ID"': '"' + difficultyMatches[1] + '"',
-                                '"Difficulty"': [metadata.value] # -> metadata.Value
-                            }
-                        # process curriculum tag
-                        else if (metadata.name == curriculumTagName) # -> metadata.Name
-                            item['"CurriculumTags"'] = item['"CurriculumTags"'] | array.add ('"' + metadata.value + '"') # -> metadata.Value
-                        end
-                    end
-                    ret item
+							discriminationId = '"' + discriminationMatches[1] + '"'
+                            item['"ScaleData"'] = item['"ScaleData"'] | addOrUpdateItemScaleData discriminationId '"Discrimination"' metadata.value
+						# process guessing tag
+						else if (guessingMatches | array.size > 0)
+							guessingId = '"' + guessingMatches[1] + '"'
+                            item['"ScaleData"'] = item['"ScaleData"'] | addOrUpdateItemScaleData guessingId '"Guessing"' 0.0
+						# process difficulty tag
+						else if (difficultyMatches | array.size > 0)
+							difficultyId = '"' + difficultyMatches[1] + '"'
+                            item['"ScaleData"'] = item['"ScaleData"'] | addOrUpdateItemScaleData difficultyId '"Difficulty"' [metadata.value]
+						# process curriculum tag
+						else if (metadata.name == curriculumTagName)
+							item['"CurriculumTags"'] = item['"CurriculumTags"'] | array.add ('"' + metadata.value + '"')
+						end
+					end
+					ret item
+				end
+				func addOrUpdateItemScaleData
+					scaleData = $0
+					id = $1
+					name = $2
+					value = $3
+					existed = -1
+					for data in scaleData
+						if data['"ID"'] == id
+							existed = for.index
+							break
+						end
+					end
+					if existed != -1
+						scaleData[existed][name] = value
+					else
+						data = { '"ID"': id }
+						data[name] = value
+						scaleData = scaleData | array.add data
+					end
+					ret scaleData
                 end
                 ret { build: @build }
             end
